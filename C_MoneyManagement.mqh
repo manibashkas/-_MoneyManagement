@@ -23,7 +23,7 @@ private:
 public:
                      C_MoneyManagement(string, int);
                      void README(){printf("depo: %g, percent: %i", account_depo, safe_percent);};
-                     double AccountDepo();
+                     double AccountDepo(); // count AccountBalance + open orders by its profit or loss
                     ~C_MoneyManagement();
   };
 //+------------------------------------------------------------------+
@@ -90,21 +90,23 @@ double C_MoneyManagement::GetVolume(double volume_to_check)
 double C_MoneyManagement::AccountDepo(void)
   {
    int orders_total = OrdersTotal();
-   double orders_open_PL = 0;
+   double orders_open_PL = 0; // count open orders by profit or loss
 
    for(int i = 0; i < orders_total; i++)
      {
       if(OrderSelect(i,SELECT_BY_POS))
-         if(OrderProfit() > 0)
-            orders_open_PL += OrderProfit();
-      else
-        {
-         if(OrderType() == OP_BUY)
-            orders_open_PL += NormalizeDouble(OrderOpenPrice()-Bid,Digits);
-         if(OrderType() == OP_SELL)
-            orders_open_PL += NormalizeDouble(Ask-OrderOpenPrice(),Digits);
-         orders_open_PL ++;
-        }
+         {
+            if(OrderProfit() > 0)
+               orders_open_PL += OrderProfit();
+            else
+            {
+               if(OrderType() == OP_BUY)
+                  orders_open_PL += NormalizeDouble(OrderOpenPrice()-Bid,Digits);
+               if(OrderType() == OP_SELL)
+                  orders_open_PL += NormalizeDouble(Ask-OrderOpenPrice(),Digits);
+               orders_open_PL ++;
+            }
+         }
      }
    account_depo = AccountBalance() + orders_open_PL;
 
